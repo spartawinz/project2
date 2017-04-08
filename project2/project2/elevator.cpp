@@ -6,16 +6,16 @@
 
 using namespace std;
 
-elevator::elevator()
+Elevator::Elevator()
 {
 }
-void elevator::addElevator(int pos)
+void Elevator::addElevator(int pos)
 {
-	elevatorPos.push_back(pos);
+	ElevatorPos.push_back(pos);
 	eDirection.push_back(NULL);
 }
 
-bool elevator::isRequests()
+bool Elevator::isRequests()
 {
 	if (!requestsDown.empty() || !requestsUp.empty() || !bttnPress.empty())
 		return true;
@@ -23,12 +23,17 @@ bool elevator::isRequests()
 		return false;
 }
 
-vector<int> elevator::getElevatorPos()
+vector<int> Elevator::getElevatorPos()
 {
-	return elevatorPos;
+	return ElevatorPos;
+}
+
+int Elevator::getFloorTime()
+{
+	return floorTime;
 }
 //checks whether requests are on the same floor and removes them then triggers a button event.
-void elevator::checkRequests(vector<int>& req, int target, int elevatorNum)
+void Elevator::checkRequests(vector<int>& req, int target, int elevatorNum)
 {
 	for (int i = 0; i < req.size(); i++)
 	{
@@ -36,13 +41,13 @@ void elevator::checkRequests(vector<int>& req, int target, int elevatorNum)
 		{
 			req.erase(req.begin() + i);
 			i--;
-			cout << "Person has entered the elevator.\n";
+			cout << "Person has entered the Elevator.\n";
 			addBttn(rand() % 5 + 1,elevatorNum);
 		}
 	}
 }
-// checks and removes requests from requests up or down depending on which way the elevator is going
-void elevator::checkElevator(bool direction,int floor,int elevatorNum)
+// checks and removes requests from requests up or down depending on which way the Elevator is going
+void Elevator::checkElevator(bool direction,int floor,int elevatorNum)
 {
 	if (direction == true && !requestsUp.empty())
 	{
@@ -56,22 +61,22 @@ void elevator::checkElevator(bool direction,int floor,int elevatorNum)
 		}
 	}
 }
-// moves the elevator based on where it needs to go and updates the direction the elevator is heading.
-void elevator::moveElevator()
+// moves the Elevator based on where it needs to go and updates the direction the Elevator is heading.
+void Elevator::moveElevator()
 {
 	if (!bttnPress.empty())
 	{
-		if (bttnPress[0][0] < elevatorPos[bttnPress[0][1]])
+		if (bttnPress[0][0] < ElevatorPos[bttnPress[0][1]])
 		{
 			eDirection[bttnPress[0][1]] = false;
 			moveDown(bttnPress[0][1]);
 		}
-		if (bttnPress[0][0] > elevatorPos[bttnPress[0][1]])
+		if (bttnPress[0][0] > ElevatorPos[bttnPress[0][1]])
 		{
 			eDirection[bttnPress[0][1]] = true;
 			moveUp(bttnPress[0][1]);	
 		}
-		if (bttnPress[0][0] == elevatorPos[bttnPress[0][1]])
+		if (bttnPress[0][0] == ElevatorPos[bttnPress[0][1]])
 		{
 			eDirection[bttnPress[0][1]] = NULL;
 			bttnPress.erase(bttnPress.begin());
@@ -83,66 +88,66 @@ void elevator::moveElevator()
 		if (!requestsDown.empty())
 		{
 			int elevatorNum = bestElevator(requestsDown[0]);
-			if (elevatorPos[elevatorNum] > requestsDown[0])
+			if (ElevatorPos[elevatorNum] > requestsDown[0])
 			{
 				eDirection[elevatorNum] = false;
 				moveDown(elevatorNum);
 			}
-			if (elevatorPos[elevatorNum] < requestsDown[0])
+			if (ElevatorPos[elevatorNum] < requestsDown[0])
 			{
 				eDirection[elevatorNum] = true;
 				moveUp(elevatorNum);
 			}
-			if (elevatorPos[elevatorNum] == requestsDown[0])
+			if (ElevatorPos[elevatorNum] == requestsDown[0])
 			{
 				eDirection[elevatorNum] = NULL;
 				requestsDown.erase(requestsDown.begin());
-				cout << "person(s) got on the elevator.\n";
+				cout << "person(s) got on the Elevator.\n";
 				addBttn(rand() % 5 + 1, elevatorNum);
 			}
 		}
 		if (!requestsUp.empty())
 		{
 			int elevatorNum = bestElevator(requestsUp[0]);
-			if (elevatorPos[elevatorNum] > requestsUp[0])
+			if (ElevatorPos[elevatorNum] > requestsUp[0])
 			{
 				eDirection[elevatorNum] = false;
 				moveDown(elevatorNum);
 			}
-			if (elevatorPos[elevatorNum] < requestsUp[0])
+			if (ElevatorPos[elevatorNum] < requestsUp[0])
 			{
 				eDirection[elevatorNum] = true;
 				moveUp(elevatorNum);
 			}
-			if (elevatorPos[elevatorNum] == requestsUp[0])
+			if (ElevatorPos[elevatorNum] == requestsUp[0])
 			{
 				eDirection[elevatorNum] = NULL;
 				requestsUp.erase(requestsUp.begin());
-				cout << "person(s) got on the elevator.\n";
+				cout << "person(s) got on the Elevator.\n";
 				addBttn(rand() % 5 + 1, elevatorNum);
 			}
 		}
 	}
 }
-// chooses the closest elevator to send to the request.
-int elevator::bestElevator(int request)
+// chooses the closest Elevator to send to the request.
+int Elevator::bestElevator(int request)
 {
-	if (elevatorPos.size() > 1)
+	if (ElevatorPos.size() > 1)
 	{
 		// locks the variable to keep from bad information with multiple writes
 		omp_lock_t writelock;
 		omp_init_lock(&writelock);
 		int best = 0;
 		int floors = 999999;
-		#pragma omp parallel shared(best,elevatorPos,request) for
+		#pragma omp parallel shared(best,ElevatorPos,request) for
 		{
-			for (int i = 0; i < elevatorPos.size(); i++)
+			for (int i = 0; i < ElevatorPos.size(); i++)
 			{
-				if (abs(elevatorPos[i] - request) < floors)
+				if (abs(ElevatorPos[i] - request) < floors)
 				{
 					omp_set_lock(&writelock);
 					best = i;
-					floors = abs(elevatorPos[i] - request);
+					floors = abs(ElevatorPos[i] - request);
 					omp_unset_lock(&writelock);
 				}
 			}
@@ -154,18 +159,18 @@ int elevator::bestElevator(int request)
 		return 0;
 	}
 }
-//initializes the elevators in the system.
-void elevator::runElevator()
+//initializes the Elevators in the system.
+void Elevator::runElevator()
 {
 	int elevatorNum;
-	cout << "please enter in amount of elevators you would like to start with: ";
+	cout << "please enter in amount of Elevators you would like to start with: ";
 	cin >> elevatorNum;
 	for (int i = 0; i < elevatorNum; i++)
 	{
 		int floor = 0;
 		while (floor < 1 || floor > 5)
 		{
-			cout << "Please enter in a valid elevator start floor from 1 to 5: ";
+			cout << "Please enter in a valid Elevator start floor from 1 to 5: ";
 			cin >> floor;
 
 			if (floor < 1 || floor > 5)
@@ -179,13 +184,13 @@ void elevator::runElevator()
 	
 }
 //adds a button press to bttnPress vector
-void elevator::addBttn(int num, int elevatorNum)
+void Elevator::addBttn(int num, int elevatorNum)
 {
 	vector<int> bttn = {num, elevatorNum};
 	bttnPress.push_back(bttn);
 }
 //wrapper function for addReq
-void elevator::addRequest(int num, int direction)
+void Elevator::addRequest(int num, int direction)
 {
 	if (direction == 0)
 		addReq(num, requestsDown);
@@ -198,18 +203,18 @@ void elevator::addRequest(int num, int direction)
 
 }
 //automatically references the request vector so that the user doesn't have to
-void elevator::addReq(int num, vector<int>& req)
+void Elevator::addReq(int num, vector<int>& req)
 {
 	req.push_back(num);
 	sortReq(req);
 }
 //wrapper for the merge sort function
-void elevator::sortReq(vector<int>& req)
+void Elevator::sortReq(vector<int>& req)
 {
 	mergeSort(req);
 }
 //Kuhails merge sort program modified with parallelism
-void elevator::merge(std::vector<int>& array, std::vector<int>& result, int lowPointer, int highPointer, int upperBound) {
+void Elevator::merge(std::vector<int>& array, std::vector<int>& result, int lowPointer, int highPointer, int upperBound) {
 
 	int j = 0;
 	int lowerBound = lowPointer;
@@ -236,7 +241,7 @@ void elevator::merge(std::vector<int>& array, std::vector<int>& result, int lowP
 		array[lowerBound + j] = result[j];
 }
 
-void elevator::mergesort(std::vector<int>& array, std::vector<int>& result, int lowerBand, int upperBand) {
+void Elevator::mergesort(std::vector<int>& array, std::vector<int>& result, int lowerBand, int upperBand) {
 	int midpoint;
 	if (lowerBand < upperBand) {
 		midpoint = (lowerBand + upperBand) / 2;
@@ -258,18 +263,22 @@ void elevator::mergesort(std::vector<int>& array, std::vector<int>& result, int 
 	}
 }
 
-void elevator::mergeSort(std::vector<int>& array){
+void Elevator::mergeSort(std::vector<int>& array){
 	std::vector<int> result = array;
 	mergesort(array, result, 0, array.size() - 1);
 }
 //end of merge sort functions
 
-// movement functions for elevator
-void elevator::moveDown(int elevatorNum)
+// movement functions for Elevator
+void Elevator::moveDown(int elevatorNum)
 {
-	cout << "Elevator " << elevatorNum << " moved down to " << elevatorPos[elevatorNum]-- << "\n";
+	cout << "Elevator " << elevatorNum << " moved down to " << ElevatorPos[elevatorNum]-- << "\n";
+	floorTime += 3;
 }
-void elevator::moveUp(int elevatorNum)
+void Elevator::moveUp(int elevatorNum)
 {
-	cout << "Elevator " << elevatorNum << " moved up to " << elevatorPos[elevatorNum]++ << "\n";
+	cout << "Elevator " << elevatorNum << " moved up to " << ElevatorPos[elevatorNum]++ << "\n";
+	floorTime += 3;
 }
+
+

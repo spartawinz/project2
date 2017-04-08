@@ -9,13 +9,13 @@ This program takes an elevator scenario and divides up the work between several 
 #include "stdafx.h"
 #include <vector>
 #include <iostream>
-#include "elevator.h"
+#include "Elevator.h"
 
 using namespace std;
 
 int main()
 {
-	elevator El;
+	Elevator El;
 	El.runElevator();
 	vector<int> elPos = El.getElevatorPos();
 	for (int i = 0; i < 5; i++)
@@ -71,7 +71,10 @@ int main()
 	if (!El.isRequests())
 	{
 		cout << "\nThere is no requests remaining. \n\n";
+		cout << "The time the elevator has spent on the move is: " << El.getFloorTime() << " Seconds\n\n";
 	}
+	// even though the heuristic for time spent with the elevator is kinda skewed since its not taking into account simultaneous running of each elevator
+	// it still shows that time is reduced by using the least amount of movements of the elevators.
 
 	system("pause");
 	return 0;
